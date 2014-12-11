@@ -10,7 +10,8 @@ allowing you to use your operating system's existing package management tools
 (such as `apt-get`, `zypper`, ...) rather than difficult-to-use or buggy
 dedicated offline package management tools.
 
-Currently, the use of a USB flash drive to 
+Currently, it is designed to use a USB flash drive to move data between a
+disconnected machine and another without a connection.
 
 Application Requirements
 ------------------------

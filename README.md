@@ -34,13 +34,13 @@ Dependencies
 ------------
 
 `offline_proxy.py`:
-    * base python 2.7 install
+ * base python 2.7 install
 
 `usb_wrapper.py`:
-    * pyudev
+ * pyudev
 
-`client.py `:
-    * requests
+`client.py`:
+ * requests
 
 Usage with `usb_wrapper`
 ------------------------
@@ -59,7 +59,7 @@ Then, configure your application to use the proxy `http://localhost:8080/`. For
 `apt-get`, you can do the following:
 
 ```bash
-sudo bash # user environment variables don't apply on Ubuntu
+sudo bash # sudo ignores user environment variables on Ubuntu
 export http_proxy="http://localhost:8080/"
 sudo apt-get update
 ```

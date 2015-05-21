@@ -42,6 +42,29 @@ Dependencies
 `client.py`:
  * requests
 
+Usage with Chrome
+-----------------
+A Chrome extension is now available that can parse and download package
+manifests directly from a Chrome or Chromium browser. It is available in the
+[Chrome Webstore](https://chrome.google.com/webstore/detail/offlineproxy-downloader/napgfnjjipogmdhpolbmmeobmiehkmfo).
+
+To use, copy a package manifest (`metadata.json`) into your clipboard. Then,
+open the extension popup via the toolbar icon and paste the contents of the
+manifest into the text area. Click the "Download" button to begin downloading.
+
+Due to extension API limits, files will be written to the `offp` directory in
+your Chrome download folder. You can temporarily reconfigure your download
+folder to point it to a USB drive to save on manual copying, if desired.
+Additionally, make sure to turn off "ask where to save each file before
+downloading" to avoid being prompted for each file save.
+
+On the target machine, you can use the new `flat_wrapper.py` script to run the
+webserver. Change into the desired output directory, run the script, and run
+your first download pass to create the initial manifest. Once the manifest has
+been written, kill the server, copy the manifest to the networked machine, and
+run the downloader. Lastly, copy the resulting files back into the target
+directory and restart the server. You should then be clear to download.
+
 Usage with `usb_wrapper`
 ------------------------
 

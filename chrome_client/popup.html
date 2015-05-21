@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+	<head>
+		<title>offline_proxy downloader</title>
+
+		<style>
+		#manifestInput {
+			width: 200px;
+			height: 75px;
+		}
+
+		#log-container {
+			margin: 1em;
+
+			overflow: auto;
+			height: 100px;
+
+			font-family: "Lucida Console", Monaco, monospace;
+			font-size: 8px;
+		}
+
+		#log {
+			list-style-type: none;
+			padding: 0;
+		}
+
+		#notes {
+			font-size: 10px;
+		}
+		</style>
+	</head>
+
+	<h3>Download a Manifest</h3>
+	<!--<input type="file" id="button">-->
+	Paste manifest contents:<br>
+	<textarea id="manifestInput"></textarea><br>
+	<button id="button">Download</button>
+
+	<h4>Output:</h4>
+	<div id="log-container">
+		<ul id="log"></ul>
+	</div>
+
+	<p id="notes">
+		Files will be downloaded to <b><code>"offp"</code></b> in your Chrome
+		download directory. Turn off "ask where to save each file" for best
+		results.<br>
+		<a href="http://github.com/timothyb89/offline_proxy" target="_blank">More Info</a>
+	</p>
+
+	<script src="client.js"></script>
+</html>

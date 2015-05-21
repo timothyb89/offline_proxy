@@ -1,10 +1,7 @@
 var manifest = null;
 var remaining = [];
 
-var savingManifest = false;
-var currentURL = null;
-var currentEntry = null;
-var currentId = null;
+var manifestId = null;
 
 function log(text) {
 	var dest = document.getElementById("log");
@@ -22,8 +19,6 @@ function randomName() {
 }
 
 function saveManifest() {
-	savingManifest = true;
-
 	console.log("saving:", manifest);
 	log("Downloads finished, saving manifest...");
 
@@ -36,7 +31,7 @@ function saveManifest() {
 		filename: 'offp/metadata.json',
 		conflictAction: 'overwrite'
 	}, function(downloadId) {
-		currentId = downloadId;
+		manifestId = downloadId;
 	});
 }
 
@@ -46,46 +41,16 @@ function download() {
 		return;
 	}
 
-	var e = remaining.pop();
-
-	currentURL = e.url;
-	currentEntry = e.entry;
-
-	currentEntry.path = randomName();
-
 	chrome.downloads.download({
-		url: e.url,
+		url: remaining.pop(),
 		saveAs: false,
-		filename: "offp/" + currentEntry.path
+		filename: "offp/" + randomName()
 	}, function(downloadId) {
 		log("Downloading #" + downloadId);
-
-		currentId = downloadId;
 	});
 }
 
-/*function onFileLoaded(event) {
-	savingManifest = false;
-	manifest = JSON.parse(event.target.result);
-
-	for (var url in manifest) {
-        if (!manifest.hasOwnProperty(url)) {
-            continue;
-        }
-
-        var entry = manifest[url];
-        if (!entry.local) {
-            remaining.push({ url: url, entry: entry });
-        }
-    }
-
-	log("Ready to download " + remaining.length + " files");
-
-	download();
-}*/
-
 function parseManifest(text) {
-	savingManifest = false;
 	manifest = JSON.parse(text);
 
 	for (var url in manifest) {
@@ -95,7 +60,7 @@ function parseManifest(text) {
 
         var entry = manifest[url];
         if (!entry.local) {
-            remaining.push({ url: url, entry: entry });
+            remaining.push(url);
         }
     }
 
@@ -105,47 +70,54 @@ function parseManifest(text) {
 }
 
 function onDownloadChanged(delta) {
-	if (delta.id !== currentId) {
-		return;
-	}
-
-	if (delta.state && delta.state.current === "complete") {
-		if (savingManifest) {
-			log("Finished.");
-			chrome.downloads.erase({ id: currentId });
+	chrome.downloads.search({ id: delta.id }, function(items) {
+		if (items.length === 0) {
 			return;
 		}
 
-		currentEntry.local = true;
+		var item = items[0];
 
-		chrome.downloads.search({ id: currentId }, function(items) {
-			var item = items[0];
+		var currentEntry = manifest[item.url];
+		if (typeof(currentEntry) === "undefined") {
+			return;
+		}
+
+		if (delta.error) {
+			chrome.downloads.erase({ id: delta.id });
+			console.log("skipping due to error", delta);
+			download(); // move on
+		}
+
+		if (delta.state && delta.state.current === "complete") {
+			if (manifestId !== null && delta.id === manifestId) {
+				log("Finished.");
+				chrome.downloads.erase({ id: delta.id });
+				return;
+			}
 
 			console.log("finished:", item);
 
 			var f = item.filename;
 			currentEntry.path = f.substring(f.lastIndexOf('/') + 1, f.length);
+			currentEntry.local = true;
 			currentEntry.status = 200;
-			currentEntry.headers = {
-				'content-type': item.mime
-			};
-		});
 
-		chrome.downloads.erase({ id: currentId });
-		download();
-	}
+			currentEntry.headers = {};
+			if (item.mime) {
+				currentEntry.headers['content-type'] = item.mime;
+			} else {
+				currentEntry.headers['content-type'] = 'text/plain';
+			}
+
+			chrome.downloads.erase({ id: delta.id });
+			download();
+		}
+	});
+
 }
 
 window.addEventListener('load', function() {
 	chrome.downloads.onChanged.addListener(onDownloadChanged);
-
-	/*var fileInput = document.getElementById("button");
-	fileInput.addEventListener('change', function(event) {
-		var f = new FileReader();
-		f.onload = onFileLoaded;
-
-		f.readAsText(event.target.files[0]);
-	});*/
 
 	var inputField = document.getElementById("manifestInput");
 	var button = document.getElementById("button");
